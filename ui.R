@@ -7,7 +7,7 @@ ui <-(fluidPage(
     h3("Display Options", align = "center"),
     
     sliderInput("month","Select Month", min = 1, max = 12, value = 1),
-    checkboxInput("normvars","Normalize data by Area", FALSE),
+    checkboxInput("normvars","Normalize Data By Area", FALSE),
     checkboxInput("showevents", "Show Event Markers", FALSE)
   ),
                 
