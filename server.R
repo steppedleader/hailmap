@@ -2,21 +2,36 @@ library(leaflet)
 library(maps)
 library(rgdal)
 library(RColorBrewer)
+library(rhdf5)
 
 server <- (function(input, output, session) {
   values <- reactiveValues(highlight = c())
+  
+  #data for map polygon, area, etc
   states <- readOGR("shp/cb_2015_us_state_20m.shp",
                     layer = "cb_2015_us_state_20m", GDAL1_integer64_policy = TRUE)
   #counties <- readOGR("shp/cb_2015_us_county_20m.shp",
   #                  layer = "cb_2015_us_county_20m", GDAL1_integer64_policy = TRUE)
   
+  #ncdc hail event data
+  haildf <- h5read("hailevents.h5","events/hail/table")
   
+  selectdata <-haildf[which(tolower(haildf$month) == tolower("may")),]
+
+  stateCount <- function(current_state) {
+    match_events <- selectdata[ which(tolower(selectdata$state) == tolower(current_state)),]
+    nevents <- length(match_events[,1])
+    return(nevents)
+  }
+  
+  states$HAILEVENTS <- sapply(states$NAME, stateCount)
+  
+  #build palette
   ramp <- colorRampPalette(brewer.pal(8,"YlOrRd"))(8)
-  pal <- colorBin(ramp, states$ALAND, bins = 8, pretty = TRUE, na.color = "#808080",
+  pal <- colorBin(ramp, states$HAILEVENTS, bins = 8, pretty = TRUE, na.color = "#808080",
                   alpha = FALSE, reverse = FALSE)
   
-  
-  # map <- leaflet(states) %>% setView(-94.85, 38, zoom = 4) %>% 
+    # map <- leaflet(states) %>% setView(-94.85, 38, zoom = 4) %>% 
   #                      setMaxBounds(-180, 17, 180 ,59) %>% 
   #                      addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
   #                      opacity = 1.0, fillOpacity = 1.0, fillColor = ~pal(states$ALAND),
@@ -31,13 +46,13 @@ server <- (function(input, output, session) {
   map <- leaflet(states) %>% addTiles() %>% setView(-94.85, 38, zoom = 4) %>%
                        setMaxBounds(-180, 17, 180 ,59) %>%
                        addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
-                       opacity = 1.0, fillOpacity = 0.5, fillColor = ~pal(states$ALAND)) %>%
-                       addLegend("bottomright", pal = pal, values = states$ALAND,
-                       title = "State Land Area (km^2)",
-                       labFormat = labelFormat(transform = function(x) 0.000001*x),
+                       opacity = 1.0, fillOpacity = 0.5, fillColor = ~pal(states$HAILEVENTS)) %>%
+                       addLegend("bottomright", pal = pal, values = states$HAILEVENTS,
+                       title = "Number of Hail Reports",
                        opacity = 0.5)
   
   output$myMap = renderLeaflet(map)
+  
   
 
   # # input$map_shape_mouseover gets updated a lot, even if the id doesn't change.
