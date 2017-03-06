@@ -5,7 +5,6 @@ library(RColorBrewer)
 library(rhdf5)
 
 server <- (function(input, output, session) {
-  values <- reactiveValues(highlight = c())
   
   #data for map polygon, area, etc
   states <- readOGR("shp/cb_2015_us_state_20m.shp",
@@ -16,82 +15,95 @@ server <- (function(input, output, session) {
   #ncdc hail event data
   haildf <- h5read("hailevents.h5","events/hail/table")
   
-  selectdata <-haildf[which(tolower(haildf$month) == tolower("may")),]
-
-  stateCount <- function(current_state) {
-    match_events <- selectdata[ which(tolower(selectdata$state) == tolower(current_state)),]
+  #function to count number of events in each state
+  stateCount <- function(current_state,data) {
+    match_events <- data[ which(tolower(data$state) == tolower(current_state)),]
     nevents <- length(match_events[,1])
     return(nevents)
   }
   
-  states$HAILEVENTS <- sapply(states$NAME, stateCount)
+  #function to update data based on month slider
+  setmonth <- reactive({
+    selectdata <-haildf[which(tolower(haildf$month) == tolower(month.name[input$month])),]
+    states$HAILEVENTS <- sapply(states$NAME, stateCount, data = selectdata)
+    return(states$HAILEVENTS)
+  })
+  
+  #function to get event data from selected month for markers
+  getpts <- reactive({
+    selectdata <-haildf[which(tolower(haildf$month) == tolower(month.name[input$month])),]
+    return(selectdata)
+  })
+  
   
   #build palette
-  ramp <- colorRampPalette(brewer.pal(8,"YlOrRd"))(8)
-  pal <- colorBin(ramp, states$HAILEVENTS, bins = 8, pretty = TRUE, na.color = "#808080",
-                  alpha = FALSE, reverse = FALSE)
-  
-    # map <- leaflet(states) %>% setView(-94.85, 38, zoom = 4) %>% 
-  #                      setMaxBounds(-180, 17, 180 ,59) %>% 
-  #                      addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
-  #                      opacity = 1.0, fillOpacity = 1.0, fillColor = ~pal(states$ALAND),
-  #                      highlightOptions = highlightOptions(color = "white", weight = 2,
-  #                      bringToFront = TRUE)) %>%
-  #                      addLegend("bottomright", pal = pal, values = states$ALAND,
-  #                      title = "State Land Area (km^2)", 
-  #                      labFormat = labelFormat(transform = function(x) 0.000001*x),
-  #                      opacity = 1)
+  ramp <- colorRampPalette(brewer.pal(8,"Oranges"))(8)
+  pal <- colorNumeric(ramp, c(0,500), na.color = "#808080",
+                      alpha = FALSE, reverse = FALSE)
 
-  #no highlighting for now, will add highlighting and dynamic data floater later
+  #Initial map setup
   map <- leaflet(states) %>% addTiles() %>% setView(-94.85, 38, zoom = 4) %>%
-                       setMaxBounds(-180, 17, 180 ,59) %>%
-                       addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
-                       opacity = 1.0, fillOpacity = 0.5, fillColor = ~pal(states$HAILEVENTS)) %>%
-                       addLegend("bottomright", pal = pal, values = states$HAILEVENTS,
-                       title = "Number of Hail Reports",
-                       opacity = 0.5)
+    setMaxBounds(-180, 17, 180 ,59)
+  output$myMap <- renderLeaflet(map)
   
-  output$myMap = renderLeaflet(map)
-  
-  
+  #Observer for month and area normalization
+  observe({
+     proxy <- leafletProxy("myMap", data = states)
+     
+     if (input$normvars) {
+       hailevents <- setmonth()   
+         
+       #normalize by square km: ALAND and AWATER are in m^2, so multiply by 1000000
+       normfactor <- 1e6/(states$ALAND + states$AWATER)
+       hailevents <- 1000*normfactor*hailevents
+       cbarvals <- c(0,2)
+       
+       pal <- colorNumeric(ramp, cbarvals, na.color = "#808080",
+                           alpha = FALSE, reverse = FALSE)
+       
+       proxy %>% clearShapes() %>% clearControls() %>%
+         addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                     opacity = 1.0, fillOpacity = 0.8, fillColor = ~pal(hailevents)) %>%
+         addLegend("bottomright", pal = pal, values = cbarvals,
+                 title = "Hail Reports Per 1000 square km",
+                 opacity = 0.8)
+     } else {
+       hailevents <- setmonth()   
+       
+       #don't normalize here
+       normfactor <- 1
+       hailevents <- normfactor*hailevents
+       cbarvals <- c(0,500)
+       
+       pal <- colorNumeric(ramp, cbarvals, na.color = "#808080",
+                           alpha = FALSE, reverse = FALSE)
+       
+       proxy %>% clearShapes() %>% clearControls() %>%
+         addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                     opacity = 1.0, fillOpacity = 0.8, fillColor = ~pal(hailevents)) %>%
+         addLegend("bottomright", pal = pal, values = c(0,500),
+                   title = "Hail Reports",
+                   opacity = 0.8)
+       
+       }
+   })
 
-  # # input$map_shape_mouseover gets updated a lot, even if the id doesn't change.
-  # # We don't want to update the polygons and stateInfo except when the id
-  # # changes, so use values$highlight to insulate the downstream reactives (as
-  # # writing to values$highlight doesn't trigger reactivity unless the new value
-  # # is different than the previous value).
-  # observe({
-  #   values$highlight <- input$map_shape_mouseover$id
-  # })
-  # 
-  # # Dynamically render the box in the upper-right
-  # output$stateInfo <- renderUI({
-  #   if (is.null(values$highlight)) {
-  #     return(tags$div("Hover over a state"))
-  #   } else {
-  #     # Get a properly formatted state name
-  #     stateName <- names(density)[getStateName(values$highlight) == tolower(names(density))]
-  #     return(tags$div(
-  #       tags$strong(stateName),
-  #       tags$div(density[stateName], HTML("people/mi<sup>2</sup>"))
-  #     ))
-  #   }
-  # })
-  # 
-  # lastHighlighted <- c()
-  # # When values$highlight changes, unhighlight the old state (if any) and
-  # # highlight the new state
-  # observe({
-  #   if (length(lastHighlighted) > 0)
-  #     drawStates(getStateName(lastHighlighted), FALSE)
-  #   lastHighlighted <<- values$highlight
-  # 
-  #   if (is.null(values$highlight))
-  #     return()
-  # 
-  #   isolate({
-  #     drawStates(getStateName(values$highlight), TRUE)
-  #   })
-  # })
+  #Observer for marker addition
+  observe({
+    eventdata <- getpts()
+    df = data.frame(eventdata$lat,eventdata$lon,eventdata$magnitude)
+    colnames(df) <- c("lats","lons","mags")
+    
+    proxy <- leafletProxy("myMap")
+    
+    if (input$showevents) {
+      proxy %>% addMarkers(map,  lng = df$lons, lat = df$lats, 
+                           popup = paste(as.character(df$mags)," inches"))
+      
+    } else {
+      proxy %>% clearMarkers()
+    }
+    
+  })
 })
 
