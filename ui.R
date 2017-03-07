@@ -6,13 +6,15 @@ ui <-(fluidPage(
   sidebarLayout(sidebarPanel(
     h3("Display Options", align = "center"),
     
+    selectInput("year", "Select Year", choices = c(2016)),
     sliderInput("month","Select Month", min = 1, max = 12, value = 1),
-    checkboxInput("normvars","Normalize Data By Area", FALSE),
+    checkboxInput("showchoro","Show Choropleth Shading", TRUE),
+    checkboxInput("normvars","Normalize Choropleth By Area", FALSE),
     checkboxInput("showevents", "Show Event Markers", FALSE)
   ),
                 
     mainPanel(
-      h3("2016 NCDC Hail Report Data", align = "center"),
+      h3("NCDC Hail Report Data", align = "center"),
       
       leafletOutput("myMap", width = "100%", height = 500)
   ), 
