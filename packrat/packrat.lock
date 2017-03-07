@@ -1,0 +1,196 @@
+PackratFormat: 1.4
+PackratVersion: 0.4.8.1
+RVersion: 3.3.2
+Repos: CRAN=https://cran.rstudio.com/
+
+Package: R6
+Source: CRAN
+Version: 2.2.0
+Hash: 712773a3439bd32db5c40938e1a9aac2
+
+Package: RColorBrewer
+Source: CRAN
+Version: 1.1-2
+
+Package: Rcpp
+Source: CRAN
+Version: 0.12.9
+Hash: 7ab41cbe74918de8de87e435ef17e92d
+
+Package: assertthat
+Source: CRAN
+Version: 0.1
+
+Package: base64enc
+Source: CRAN
+Version: 0.1-3
+
+Package: colorspace
+Source: CRAN
+Version: 1.3-2
+
+Package: crosstalk
+Source: CRAN
+Version: 1.0.0
+Requires: R6, jsonlite, htmltools, shiny, ggplot2, lazyeval
+
+Package: dichromat
+Source: CRAN
+Version: 2.0-0
+
+Package: digest
+Source: CRAN
+Version: 0.6.12
+Hash: e53fb8c58673df868183697e39a6a4d6
+
+Package: ggplot2
+Source: CRAN
+Version: 2.2.1
+Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
+
+Package: gridExtra
+Source: CRAN
+Version: 2.2.1
+Requires: gtable
+
+Package: gtable
+Source: CRAN
+Version: 0.2.0
+
+Package: h5
+Source: CRAN
+Version: 0.9.8
+Hash: 79e52342de6ea262f743994e579ba923
+Requires: Rcpp
+
+Package: htmltools
+Source: CRAN
+Version: 0.3.5
+Hash: 6c7e3a96d9034d3ba8e6a07f7e2a333d
+Requires: Rcpp, digest
+
+Package: htmlwidgets
+Source: CRAN
+Version: 0.8
+Requires: jsonlite, htmltools, yaml
+
+Package: httpuv
+Source: CRAN
+Version: 1.3.3
+Hash: d73b1fc4f52d1179ff24f12f49eb6121
+Requires: Rcpp
+
+Package: jsonlite
+Source: CRAN
+Version: 1.3
+Hash: b9cc3c97b7a6cd513e9b516fe881d6c9
+
+Package: labeling
+Source: CRAN
+Version: 0.3
+
+Package: lazyeval
+Source: CRAN
+Version: 0.2.0
+
+Package: leaflet
+Source: CRAN
+Version: 1.1.0
+Requires: htmltools, RColorBrewer, base64enc, crosstalk, htmlwidgets,
+    magrittr, markdown, png, raster, scales, sp, viridis
+
+Package: magrittr
+Source: CRAN
+Version: 1.5
+
+Package: maps
+Source: CRAN
+Version: 3.1.1
+
+Package: markdown
+Source: CRAN
+Version: 0.7.7
+Requires: mime
+
+Package: mime
+Source: CRAN
+Version: 0.5
+Hash: 463550cf44fb6f0a2359368f42eebe62
+
+Package: munsell
+Source: CRAN
+Version: 0.4.3
+Requires: colorspace
+
+Package: packrat
+Source: CRAN
+Version: 0.4.8-1
+Hash: 6ad605ba7b4b476d84be6632393f5765
+
+Package: plyr
+Source: CRAN
+Version: 1.8.4
+Requires: Rcpp
+
+Package: png
+Source: CRAN
+Version: 0.1-7
+
+Package: raster
+Source: CRAN
+Version: 2.5-8
+Requires: Rcpp, sp
+
+Package: reshape2
+Source: CRAN
+Version: 1.4.2
+Requires: Rcpp, plyr, stringr
+
+Package: scales
+Source: CRAN
+Version: 0.4.1
+Requires: Rcpp, RColorBrewer, dichromat, labeling, munsell, plyr
+
+Package: shiny
+Source: CRAN
+Version: 1.0.0
+Hash: 315fd5ac8ada4047f81af7c19d5a5974
+Requires: R6, digest, jsonlite, mime, sourcetools, xtable, httpuv,
+    htmltools
+
+Package: sourcetools
+Source: CRAN
+Version: 0.1.5
+Hash: 04ddeb1c288302222562326a471e2945
+
+Package: sp
+Source: CRAN
+Version: 1.2-4
+
+Package: stringi
+Source: CRAN
+Version: 1.1.2
+
+Package: stringr
+Source: CRAN
+Version: 1.2.0
+Requires: magrittr, stringi
+
+Package: tibble
+Source: CRAN
+Version: 1.2
+Requires: Rcpp, assertthat, lazyeval
+
+Package: viridis
+Source: CRAN
+Version: 0.3.4
+Requires: ggplot2, gridExtra
+
+Package: xtable
+Source: CRAN
+Version: 1.8-2
+Hash: 7293235cfcc14cdff1ce7fd1a0212031
+
+Package: yaml
+Source: CRAN
+Version: 2.1.14
